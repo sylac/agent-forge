@@ -25,8 +25,7 @@ Loading `.github/skills/skill-authoring/SKILL.md` provides: anatomy templates, p
 2. **Audit the Workspace** — Check instructions, agents, and existing skills for overlap before drafting
 3. **Extract and Compress** — Apply density thresholds; route heavy content to `references/`, `assets/`, or `scripts/`
 4. **Structure and Draft** — Apply information placement and anatomy from the skill-authoring skill
-5. **Validate and Deliver** — Run the skill-authoring quality checklist; confirm file before delivering
-6. **Route Non-Skill Requests** — Direct all agent-file, instruction-file, and application-code requests to Agent Architect
+5. **Validate** — Run the skill-authoring quality checklist; fix all failures before confirming the file
 
 ---
 

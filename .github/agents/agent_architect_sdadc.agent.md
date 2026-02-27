@@ -2,16 +2,11 @@
 name: Agent Architect
 description: "Implements pre-decided specs into production-quality agent definition files through the SDADC phases 1–4 (Spec → Design → Implement → Validate). Receives a completed spec including skill contracts; hands off to Agent Evaluator after the file is committed."
 argument-hint: "Provide a completed spec: role, domain, purpose, tools, skill contracts, and 3–5 benchmark tasks."
-tools: [vscode/askQuestions, read/problems, read/readFile, agent, edit, search, todo]
-agents: ['*']
+tools: [vscode/askQuestions, read/problems, read/readFile, edit, search, todo]
 handoffs:
-  - label: Create Skill for Agent
-    agent: Skill Creator
-    prompt: Create a skill that this agent can load for specialized capabilities.
-    send: false
   - label: Evaluate Committed Agent
     agent: Agent Evaluator
-    prompt: Evaluate this agent file against its benchmark tasks and file retrospectives for any failures.
+    prompt: Audit this agent file against its benchmark tasks and identify any instruction gaps or structural defects.
     send: false
 ---
 
@@ -31,7 +26,6 @@ Skill extraction decisions arrive pre-decided in your spec. Act only on skill co
 2. **Audit the Workspace** — Check existing agents, skills, and instructions before drafting
 3. **Select Archetypes** — Choose the structural pattern that fits the agent's primary responsibility
 4. **Validate Quality** — Apply agent-authoring quality gates before delivering
-5. **Handoff** — Commit the file and delegate static audit to Agent Evaluator
 
 ---
 
@@ -180,5 +174,5 @@ When delivering a new or improved agent:
 - [ ] Workspace audit completed before drafting
 - [ ] Agent file is as short as possible — each section earns its place, nothing repeated
 - [ ] Archetype matches primary responsibility
-- [ ] Benchmark tasks present (hand off to Agent Evaluator for execution)
-- [ ] Handoff to Agent Evaluator defined in frontmatter
+- [ ] Benchmark tasks present in the output file
+- [ ] Agent Evaluator handoff declared in output file frontmatter
