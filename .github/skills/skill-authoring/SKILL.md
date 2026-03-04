@@ -9,24 +9,16 @@ This skill provides the canonical structure, progressive loading model, and qual
 
 **CE rules (primacy/recency, token budgets, extraction matrix, workspace audit) are in `authoring-rules.instructions.md` — auto-applied, do not reproduce here.**
 
-## When to Use This Skill
-
-- Creating a new `SKILL.md` file
-- Auditing an existing skill for structure or quality violations
-- Improving a skill after feedback or failed benchmark evaluation
-- Deciding what belongs in `SKILL.md` body vs. `references/`, `assets/`, or `scripts/`
-
 ---
 
 ## Skill File Anatomy
 
 Required sections in order:
 
-1. **Frontmatter** — `name` (required, must match parent directory name), `description` (required, specific load condition)
-2. **H1 + Identity paragraph** — what it enables, when to apply, one hard constraint
-3. **`## When to Use This Skill`** — bullet list of triggering conditions
-4. **Middle reference sections** — tables, matrices, examples
-5. **`## Validation Checklist`** — anchors the bottom
+1. **Frontmatter** — `name` (required, must match directory name), `description` (required; what it does + trigger conditions)
+2. **H1 + Identity paragraph** — what it enables, one hard constraint
+3. **Middle reference sections** — tables, matrices, examples
+4. **`## Validation Checklist`** — anchors the bottom
 
 ---
 
@@ -56,6 +48,7 @@ Compression patterns:
 
 - [ ] Single topic — exactly one domain or capability
 - [ ] `name` matches parent directory name exactly
+- [ ] `description` includes trigger conditions (when to load)
 - [ ] Identity paragraph present as first paragraph
 - [ ] Critical constraints in the first third of the file
 - [ ] No auto-applied instruction content duplicated
@@ -64,4 +57,3 @@ Compression patterns:
 - [ ] All code examples ≤4 lines
 - [ ] Token target met: ≤800 tokens (extension to 2000 must be explicitly justified)
 - [ ] Validation checklist is the last section
-- [ ] 3–5 benchmark tasks completable using only this skill's content

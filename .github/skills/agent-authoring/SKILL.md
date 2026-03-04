@@ -9,13 +9,6 @@ This skill provides the canonical structure and quality gates for `.agent.md` fi
 
 **CE rules (primacy/recency, token budgets, extraction matrix, workspace audit) are in `authoring-rules.instructions.md` — auto-applied, do not reproduce here.**
 
-## When to Use This Skill
-
-- Creating a new `.agent.md` file
-- Auditing an existing agent file for structure or quality violations
-- Improving an agent after a failed benchmark evaluation
-- Deciding whether content belongs inline in an agent vs. extracted to a skill
-
 ---
 
 ## Agent File Anatomy
