@@ -1,6 +1,6 @@
 ---
 name: Copilot Primitives Format
-description: Exact YAML frontmatter schemas for .agent.md, SKILL.md, .instructions.md, and .prompt.md. Enforces only officially supported fields and valid built-in tool names.
+description: Exact YAML frontmatter schemas for .agent.md, SKILL.md, .instructions.md, and .prompt.md. Enforces only officially supported fields.
 applyTo: '.github/agents/**, .github/skills/**, .github/instructions/**'
 ---
 
@@ -8,7 +8,9 @@ applyTo: '.github/agents/**, .github/skills/**, .github/instructions/**'
 
 This file encodes the official YAML frontmatter schemas for GitHub Copilot's four authoring primitives, sourced from VS Code documentation (last updated 2026-02).
 
-**Hard constraint:** Only fields listed below are officially supported. Unknown fields are silently ignored. Invalid tool names (e.g., slash-notation like `read/readFile`) are silently dropped at runtime.
+**Hard constraint:** Only fields listed below are officially supported. Unknown fields are silently ignored. Tool names must be used exactly as the system provides them — do not normalize, invent, or alias names.
+
+> **Tool name availability is version-dependent.** Available tool names vary across VS Code and extension versions, and an agent's visible tool set depends on its configuration. Do not maintain a static registry in this file. When authoring `tools:` fields, infer names from existing `.agent.md` files in the repo and flag them for human verification — only a human with VS Code IntelliSense can confirm valid names for the installed version.
 
 ---
 
@@ -104,50 +106,10 @@ handoffs:
 
 ---
 
-## Built-in Tool Names
-
-Use exact names below in `tools:` fields. Unrecognised names are silently dropped.
-
-| Tool name | What it does |
-|-----------|-------------|
-| `agent` | Invoke subagents (also add `agents:` to specify which) |
-| `changes` | Source control staged/unstaged diffs |
-| `codebase` | Semantic code search across workspace |
-| `editFiles` | Apply edits to workspace files |
-| `fetch` | Fetch content from a URL |
-| `fileSearch` | Find files by glob pattern |
-| `githubRepo` | Code search in a GitHub repository |
-| `listDirectory` | List contents of a directory |
-| `problems` | Workspace diagnostics / Problems panel |
-| `readFile` | Read file contents |
-| `runInTerminal` | Run shell commands in integrated terminal |
-| `runSubagent` | Execute task in an isolated subagent context |
-| `runTests` | Run unit tests |
-| `runVscodeCommand` | Execute a VS Code command by ID |
-| `textSearch` | Find text in files (regex-capable) |
-| `todos` | Track todo list for multi-step tasks |
-| `usages` | Find all references, implementations, definitions |
-| `VSCodeAPI` | Answer questions about VS Code extension API |
-
-**Built-in tool sets** (activate multiple tools with one name):
-
-| Set name | Coverage |
-|----------|----------|
-| `edit` | `editFiles` + related file modification tools |
-| `search` | `fileSearch` + `codebase` |
-| `runCommands` | `runInTerminal` + `getTerminalOutput` |
-| `runTasks` | `runTask` + `getTaskOutput` |
-| `runNotebooks` | `runCell` + notebook editing tools |
-
----
-
 ## Common Errors
 
 | Wrong | Correct | Rule |
 |-------|---------|------|
-| `read/readFile` | `readFile` | No slash notation in tool names |
-| `read/problems` | `problems` | — |
-| `todo` | `todos` | Exact name match required |
 | `infer: true` | `user-invokable: true` | `infer` is deprecated |
 | `infer: false` | `user-invokable: false` | — |
 | `handoffs[].send: "false"` | `handoffs[].send: false` | Boolean, not string |
@@ -163,7 +125,7 @@ Use exact names below in `tools:` fields. Unrecognised names are silently droppe
 - [ ] `.agent.md`: `agents:` field present whenever `agent` is in `tools:`
 - [ ] `model` values use qualified format: `Model Name (vendor)` (e.g., `Claude Sonnet 4.5 (copilot)`)
 - [ ] No deprecated `infer` field present
-- [ ] All tool names are exact matches from the Built-in Tool Names table above
+- [ ] Tool names are not hardcoded from a static registry — availability is version- and configuration-dependent
 - [ ] `handoffs[].send` is a boolean (`true`/`false`), not a quoted string
 - [ ] `.instructions.md` `applyTo` is a single glob string, not an array
 - [ ] `.prompt.md` `agent` is one of: `ask`, `agent`, `plan`, or a named custom agent
