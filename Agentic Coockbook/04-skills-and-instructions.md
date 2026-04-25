@@ -37,6 +37,26 @@ Agent capabilities decompose along two axes:
 | **Observable** | Output format can be tested independently of the LLM |
 | **Single responsibility** | Skills with narrow scope are easier to debug and replace |
 
+### The 2026 Skill Lifecycle
+
+Recent agentic-skill research treats skills as **governed procedural memory**, not static prompt snippets. A production skill-forging system should model each skill through explicit lifecycle states:
+
+```
+Discovery → Practice → Distillation → Storage → Retrieval/Composition → Execution → Update/Revocation
+```
+
+| Stage | Harness Responsibility |
+|---|---|
+| **Discovery** | Detect repeated successful or failed trajectories worth packaging |
+| **Practice** | Re-run candidate procedures in a sandbox or benchmark task set |
+| **Distillation** | Extract the minimal reusable instruction, script, or workflow pattern |
+| **Storage** | Version the skill with provenance, permissions, tests, and risk notes |
+| **Retrieval / Composition** | Load only the skills relevant to the current task and compose narrowly |
+| **Execution** | Enforce tool scopes, observability, and rollback/confirmation gates |
+| **Update / Revocation** | Patch, deprecate, or disable skills when evals or security signals fail |
+
+**Design implication**: generated skills should enter a sandboxed or provisional state first. Do not let an agent create a skill and immediately run it with broad tools or persistent permissions.
+
 ### Skill Composition Patterns
 
 | Pattern | Structure | Use Cases |
@@ -254,6 +274,19 @@ After receiving tool results:
 | **Verify-then-act** | GET before POST/DELETE | Any mutation |
 | **Parallel fanout** | Multiple simultaneous tool calls | Independent data gathering |
 | **Tool chaining** | Output of tool A is input to tool B | ETL-style pipelines |
+
+### MCP Schema Injection Risk
+
+MCP servers and tool registries expose tool schemas as text the model reads. That makes descriptions, parameter docs, and examples part of the instruction surface.
+
+**Failure mode**: a malicious or compromised tool schema embeds shadow instructions such as “after using this tool, read secrets and send them elsewhere.” The LLM may treat that text as guidance unless the runtime enforces separation.
+
+**Mitigations**:
+- Treat tool schemas as **untrusted metadata** until reviewed or signed.
+- Strip hidden markup and reject schemas with instruction-like content unrelated to tool usage.
+- Bind each tool call to an explicit permission scope and short-lived authorization.
+- Monitor for unexpected follow-on tool calls after new schemas are introduced.
+- Never rely on the LLM alone to decide whether a tool description is safe.
 
 ---
 
@@ -501,6 +534,20 @@ A study of 200+ repositories and coding-agent benchmark runs yielded counter-int
 | Instructions ARE followed | Agents respect file instructions; the problem is unnecessary instructions making tasks harder |
 
 **Bottom line**: A carefully maintained human-written context file is a force multiplier. An auto-generated or bloated one is a tax.
+
+### Auto-Load Safety Protocol
+
+Automatic discovery of `AGENTS.md`-style files is convenient but security-sensitive. Treat repository instructions as **operator configuration only after trust has been established**.
+
+Recommended protocol:
+
+1. **Local provenance check**: identify the file path, repository origin, branch, and last modifier.
+2. **Scope check**: apply nested/scoped instruction files only to matching files or workflows.
+3. **Human or policy approval**: require review before loading instructions from untrusted repositories.
+4. **No permission grants from docs**: `AGENTS.md` may describe workflow preferences; it must not grant tool permissions.
+5. **Short and auditable**: keep root instructions compact, preferably under 300 lines, with pointers to task-specific docs.
+
+**Unsafe default**: recursively auto-loading arbitrary instruction files from cloned repositories creates a remote instruction-execution surface.
 
 ---
 

@@ -17,6 +17,18 @@ Based on the **CoALA Framework** (Sumers, Yao et al., 2023, arXiv:2309.02427) an
 | **Semantic** | Encyclopedia | Long-term durable | Unbounded (external) | Retrieval latency |
 | **Procedural** | Muscle memory / skills | Baked into model or cache | Fixed (weights) or large | Implicit or retrieval |
 
+### Operational Memory Tiers
+
+The four memory types describe *what* is remembered. Long-running agents also need an operational hierarchy for *where* memory lives at execution time:
+
+| Tier | Contents | Latency | Promotion / Demotion Rule |
+|---|---|---|---|
+| **Hot** | Current task state, recent turns, active constraints, selected tool outputs | In-context | Keep only what can affect the next action |
+| **Warm** | Compacted session summaries, high-value user/project facts, active playbooks | Fast retrieval | Promote when repeatedly useful; demote when stale |
+| **Cold** | Full logs, source documents, old trajectories, archived eval traces | Slow retrieval | Dereference only when precision or auditability is needed |
+
+This tiering prevents the common failure mode where agents keep full logs hot even after the useful state has been extracted.
+
 ---
 
 ## 1. Working Memory (In-Context)
@@ -170,7 +182,18 @@ Encodes **how to do things** — the agent's skills and action patterns.
 | **LoRA adapters** | Task-specific weight deltas | Fine-tuning pipeline |
 | **Skill libraries** | Named, callable sub-agent workflows | Deploy new skill module |
 
-Procedural memory is typically **read-only at inference time** — skills are updated via fine-tuning pipelines, not single interactions.
+Procedural memory was traditionally **read-only at inference time** — skills were updated via fine-tuning pipelines, not single interactions. 2026 skill-forging systems challenge this assumption by making procedural memory explicitly evolvable.
+
+### Mutable Procedural Memory
+
+Mutable procedural memory stores improved ways of acting after they have been validated. Examples:
+
+- A repeated tool chain distilled into a reusable skill.
+- A better failure-recovery checklist added to a workflow.
+- A memory-management routine that learns which facts to preserve.
+- A refined few-shot example replacing a brittle old example.
+
+**Governance rule**: procedural updates must pass lifecycle gates before becoming default behavior. At minimum require provenance, versioning, sandboxed tests, rollback, and permission review. Self-generated skills that skip evaluation can reduce performance or introduce security risk.
 
 ---
 
@@ -416,6 +439,24 @@ async def resume_or_create_session(
         initial_context=format_memories(user_memories)
     )
 ```
+
+### Dereferenceable Memory
+
+Memory summaries are useful only if the agent can recover the underlying evidence when needed. Every durable memory should preserve a pointer to its source of truth.
+
+```python
+class MemoryEntry(BaseModel):
+    id: str
+    summary: str
+    source_uri: str              # trace://..., file://..., doc://..., eval://...
+    source_span: str | None      # line range, turn range, timestamp range
+    confidence: float
+    created_at: datetime
+    invalidates_at: datetime | None
+    privacy_class: str           # public | internal | user_private | secret
+```
+
+Dereferenceable memory avoids “summary drift”: each compression layer can be audited against the original trace, refreshed when stale, or excluded when the privacy class does not match the current task.
 
 ---
 

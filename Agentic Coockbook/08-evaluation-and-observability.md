@@ -86,6 +86,19 @@ Multi-turn, human-agent-API realistic evaluation. A simulated human user interac
 
 **Key finding**: Even GPT-4o achieves under 50% average success. Most failures: policy-bending under user pressure, silent arithmetic errors, forgetting early-turn context constraints.
 
+### 2026 Long-Horizon and Context-Efficiency Benchmarks
+
+Long-horizon evaluation is moving beyond static “needle in a haystack” tests toward dynamic rollouts where the agent must manage state, tools, and context over many steps.
+
+| Benchmark Family | Measures | Why It Matters |
+|---|---|---|
+| **AgentLongBench-style tasks** | Dynamic synthesis across very long contexts | Tests effective context length and information density, not advertised window size |
+| **LoCoBench-Agent-style SWE tasks** | Multi-file software work with tool choice | Reveals the trade-off between codebase comprehension and exploration bloat |
+| **AgencyBench-V2-style rollouts** | Long-horizon tool use, recovery, sandboxed deliverables | Measures resilience over many actions rather than one-shot answer quality |
+| **Mem2Act-style tasks** | Whether retrieved memories correctly ground tool parameters | Distinguishes remembering facts from acting on them |
+
+Use these as design references for internal evals. Public benchmark wins are not proof of production readiness; they identify failure modes your own harness should reproduce.
+
 ---
 
 ## 2. Trajectory Evaluation
@@ -104,6 +117,23 @@ where $s_t$ = state, $a_t$ = action, $o_t$ = observation.
 | **Plan-action alignment** | Does execution match the initial plan? | Planning quality |
 | **Redundant tool calls** | Count of duplicate calls with identical args | State tracking failures |
 | **Loop detection** | Circular state oscillation | Stuck agent |
+
+### Trajectory Efficiency Score
+
+For agents, the cost of success matters. Track an efficiency score alongside pass/fail outcomes:
+
+$$\text{Trajectory Efficiency} = \frac{\text{Task Success} \times \text{Grounding Quality}}{\log(1 + \text{Input Tokens}) \times \log(1 + \text{Tool Calls}) \times \text{Latency Factor}}$$
+
+The exact formula should be calibrated per domain, but the principle is stable: a skill or context strategy is better only if it improves success **without** hiding a large increase in tokens, retries, or tool churn.
+
+Minimum fields to log per trajectory:
+- total input/output tokens
+- number of tool calls and retries
+- number of memory reads/writes
+- context compaction events
+- failed or redundant actions
+- human approvals requested
+- final task outcome and rollback status
 
 ### Process vs. Outcome Evaluation
 
@@ -293,6 +323,20 @@ For each test case, predict the vulnerable behavior.
 Format as JSON list with: test_input, expected_vulnerability, severity(1-5)
 """
 ```
+
+### Adversarial Skill Evaluation
+
+Skill-forging systems need tests beyond ordinary jailbreaks:
+
+| Attack | Eval Case |
+|---|---|
+| **Malicious frontmatter** | Skill metadata tries to override system rules or request unrelated tools |
+| **MCP schema injection** | Tool description contains hidden instructions or exfiltration requests |
+| **Poisoned warm memory** | Retrieved memory contains imperative text disguised as a remembered fact |
+| **Permission escalation** | Skill asks for broader tools than its manifest declares |
+| **Supply-chain update** | New skill version changes behavior without corresponding eval/provenance updates |
+
+A generated or third-party skill should not graduate from sandbox to trusted use until it passes adversarial tests for its declared tools and data classes.
 
 ---
 

@@ -26,6 +26,19 @@
 Each boundary is an attack surface. Each arrow is a trust decision.
 ```
 
+### Trajectory Privacy
+
+Agent trajectories contain more than final answers: they include tool arguments, intermediate observations, memory recalls, draft plans, and sometimes sensitive user context. Treat trajectories as sensitive data by default.
+
+Privacy rules:
+- Do not sync raw trajectories across users or public skill marketplaces.
+- Redact secrets and PII before using traces for evaluation or skill improvement.
+- Store chain-of-thought-like internal reasoning only when necessary, and prefer structured decision logs over verbatim private reasoning.
+- Preserve consent, tenant, and data-class metadata on every trace used for skill distillation.
+- Make deletion and revocation propagate to derived memories or skills when feasible.
+
+**Safe pattern**: learn from aggregated, redacted failure modes; do not train shared skills directly on raw user sessions.
+
 ---
 
 ## 1. Prompt Injection
@@ -390,6 +403,35 @@ def can_override(instruction: Instruction, context: AgentContext) -> bool:
 
 > An agent should request only the access it needs, retain only what it must, and prefer reversible over irreversible actions.
 
+### Skill Manifest and Trust Tiers
+
+Every deployable skill should carry a manifest that makes its provenance and execution bounds explicit before the model ever loads the instructions.
+
+```json
+{
+  "name": "invoice-reconciliation",
+  "version": "1.2.0",
+  "origin": "internal://finance-automation",
+  "author": "finance-platform-team",
+  "trust_tier": "T2_INTERNAL_REVIEWED",
+  "required_tools": ["read_invoices", "write_reconciliation_draft"],
+  "forbidden_tools": ["send_payment", "delete_invoice"],
+  "data_classes": ["internal", "financial"],
+  "eval_status": "passed-regression-2026-04-20",
+  "signature": "sigstore-or-platform-signature"
+}
+```
+
+| Trust Tier | Source | Default Permission |
+|---|---|---|
+| **T0 Platform** | Built-in platform/runtime skill | Platform-defined, audited |
+| **T1 Operator** | Organization-maintained skill | Scoped tools after review |
+| **T2 Internal Reviewed** | Team skill with tests and provenance | Limited task-specific tools |
+| **T3 Generated / Experimental** | Agent-generated or draft skill | Sandbox only |
+| **T4 Third-Party Untrusted** | Unknown marketplace/repo skill | Do not auto-load or execute |
+
+Skill text may suggest behavior, but the runtime must enforce permissions from the manifest. A skill cannot grant itself new tools by writing instructions in Markdown.
+
 ### Reversibility Preference
 
 ```python
@@ -574,4 +616,12 @@ OBSERVABILITY & COMPLIANCE
   ✓ Incident response runbook
   ✓ Data retention + deletion policies documented
   ✓ User consent for long-term memory
+
+SKILL-FORGING SECURITY
+  ✓ No auto-loading generated or third-party skills without trust policy
+  ✓ Skill manifests include origin, version, permissions, data classes, and eval status
+  ✓ Permissions are scoped per skill and revocable per invocation/session
+  ✓ Skill updates re-trigger review when tools, permissions, or behavior change
+  ✓ Raw trajectories are redacted before reuse in evals or skill distillation
+  ✓ MCP/tool schemas are signed or reviewed before exposure to the model
 ```

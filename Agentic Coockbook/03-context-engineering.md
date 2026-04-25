@@ -45,6 +45,19 @@ Total Budget = System Prompt
 
 Each component competes for the same finite resource. Cost at scale: $0.003–$0.015/1K input tokens (frontier models, 2025). Poorly engineered 100K-token context costs ~10× more than well-compressed 10K equivalent.
 
+### 2026 Context Budget Metrics
+
+Long-context agents fail from **low signal density** before they fail from nominal context-window limits. Treat every added token as an allocation decision with an expected return.
+
+| Metric | Definition | Use |
+|---|---|---|
+| **Control context ratio** | `(system + policy + tool schemas) / active window` | Keep stable instructions compact; investigate when it exceeds ~15% |
+| **Semantic ROI** | Task-relevant information gained per 1K injected tokens | Prefer compact, high-evidence snippets over verbose dumps |
+| **Context-action entropy** | How strongly the context narrows the next valid action set | Remove context that creates more plausible but irrelevant actions |
+| **Dereference coverage** | `% of summaries with source pointers` | Prevent opaque summaries from replacing evidence |
+
+**Operational rule**: Trigger compaction before the effective context window is saturated, typically around 70–75% of the empirically reliable window for the model/task pair. The advertised maximum window is not the same as the useful window.
+
 ### The Lost-in-the-Middle Problem
 
 **Liu et al., 2023 ("Lost in the Middle")**: Transformer attention degrades for content in the middle of long contexts. Recall is highest for content at the **beginning or end** of the context window.
@@ -71,6 +84,18 @@ Apply information theory to prompts: high-probability text (boilerplate, filler,
 ## Context Compression Techniques
 
 When available information exceeds budget, compression is necessary. Preserve high-value signal; discard noise.
+
+### Active Context Curation (2026 Pattern)
+
+Classic compression is batch-oriented: summarize when the window gets too large. 2026 context-engineering work reframes curation as an **agent action** performed throughout the reasoning loop:
+
+1. **Select** the evidence needed for the next few steps, not the entire task universe.
+2. **Prune** stale observations, duplicate tool output, and verbose logs after extracting state.
+3. **Promote** reasoning anchors: constraints, decisions, source pointers, failing assumptions, and unresolved blockers.
+4. **Dereference** compact summaries back to full-fidelity logs when precision matters.
+5. **Audit** whether the curated context improved success, latency, and tool-call efficiency.
+
+This prevents **context collapse**: the failure mode where repeated summaries, semi-relevant retrievals, and unbounded tool outputs crowd out the few tokens that actually determine the next action. Active curation is prototype-ready for harness experiments; formal models such as Structural Context Modeling are useful as vocabulary, but should be validated on real tasks before becoming production defaults.
 
 ### 1. Extractive Summarization
 

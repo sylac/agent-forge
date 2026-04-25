@@ -57,9 +57,12 @@ Both paths share the same technical requirements, but you choose what's relevant
 A skill is a folder containing:
 
 - `SKILL.md` *(required)*: Instructions in Markdown with YAML frontmatter
+- `manifest.json` *(recommended for governed deployments)*: Provenance, permissions, trust tier, version, and evaluation status
 - `scripts/` *(optional)*: Executable code (Python, Bash, etc.)
 - `references/` *(optional)*: Documentation loaded as needed
 - `assets/` *(optional)*: Templates, fonts, icons used in output
+
+For personal experiments, `SKILL.md` may be enough. For shared, organization-wide, marketplace, or tool-using skills, add a manifest so the runtime can enforce permissions independently of the model's interpretation of the instructions.
 
 ### Core Design Principles
 
@@ -80,6 +83,26 @@ Multiple skills can be loaded simultaneously. Your skill should work well alongs
 #### Portability
 
 Skills are designed to be portable across platforms and deployment modes. Create a skill once and deploy anywhere the format is supported, provided the environment supports any dependencies the skill requires.
+
+#### Provenance and Least Privilege
+
+Reusable skills are part of the agent supply chain. Each skill should make its origin and required authority explicit:
+
+```json
+{
+  "name": "project-sprint-planner",
+  "version": "1.0.0",
+  "origin": "github.com/acme/agent-skills/project-sprint-planner",
+  "author": "Acme Platform Team",
+  "trust_tier": "internal-reviewed",
+  "required_tools": ["linear.search", "linear.create_issue"],
+  "forbidden_tools": ["linear.delete_issue"],
+  "data_classes": ["internal"],
+  "eval_status": "passed-regression"
+}
+```
+
+The manifest is not a prompt. It is a runtime contract: tools, data access, and update permissions should be enforced outside the model.
 
 ---
 
@@ -568,11 +591,40 @@ Skills are living documents. Plan to iterate based on:
 
 *Solution:* Improve instructions, add error handling.
 
+### Lifecycle Gates for Governed Skills
+
+For team or production skills, iteration should follow explicit gates:
+
+| State | Entry Criteria | Allowed Use |
+|---|---|---|
+| **Draft** | Initial `SKILL.md` exists | Human review only |
+| **Sandbox** | Manifest present; no broad permissions | Isolated test runs |
+| **Candidate** | Trigger, functional, and adversarial tests pass | Limited beta users |
+| **Trusted** | Versioned, monitored, rollback path defined | Production use within declared scope |
+| **Deprecated** | Better replacement or stale behavior identified | No new adoption |
+| **Revoked** | Security, privacy, or correctness failure | Disabled; permissions removed |
+
+Promotion should require evidence, not confidence. Demotion should be fast when telemetry shows over-triggering, tool misuse, privacy risk, or degraded trajectory efficiency.
+
 ---
 
 ## Chapter 4: Distribution and Sharing
 
 Skills make your MCP integration more complete. As users compare connectors, those with skills offer a faster path to value, giving you an edge over MCP-only alternatives.
+
+### The Skill Supply Chain
+
+Distribution turns skills into dependencies. Treat every downloaded, generated, or marketplace skill like code with execution influence.
+
+Safe distribution rules:
+
+- Prefer skills from known authors, signed releases, and reviewed repositories.
+- Pin versions for production use; do not auto-update high-privilege skills silently.
+- Re-run tests when frontmatter, tool requirements, scripts, or references change.
+- Never grant persistent broad permissions just because a skill was useful once.
+- Keep raw user trajectories out of public skill repositories; publish distilled, redacted examples instead.
+
+**Risk model**: a malicious skill does not need suspicious code. It can exfiltrate data through ordinary tools if its instructions cause the agent to read sensitive context and send it elsewhere. Runtime permission checks are mandatory.
 
 ### Distribution Model
 
