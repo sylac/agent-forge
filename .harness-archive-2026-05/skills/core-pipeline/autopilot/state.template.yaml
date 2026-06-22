@@ -1,0 +1,44 @@
+status: pending
+context: ""
+pipeline_name: core-pipeline
+feature_summary: ""
+current_phase: Init
+phase_index: 0
+phase_order:
+  - Init
+  - Ideation
+  - Feature Analysis
+  - Spec
+  - Architecture
+  - Stories
+  - Implementation
+  - Observability
+  - Testing
+  - UI Testing
+  - Review
+  - Spec Reconciliation
+  - User Confirmation
+  - Finalization
+scale_level: ""
+ideation_mode: ""
+inner_loop:
+  active: false
+  last_failed_gate: ""
+  history: []
+artifacts:
+  feature_analysis: ""
+  feature_spec: ""
+  architecture_doc: ""
+  stories_doc: ""
+  implementation_report: ""
+  observability_report: ""
+  test_report: ""
+  ui_test_report: ""
+  review_report: ""
+  reconciliation_report: ""
+user_confirmation:
+  granted: false
+  note: ""
+metadata:
+  started_at: ""
+  updated_at: ""

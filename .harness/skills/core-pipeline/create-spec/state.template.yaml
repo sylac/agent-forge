@@ -1,0 +1,15 @@
+status: pending
+context: ""
+feature_name: ""
+feature_group: ""
+feature_id: ""
+requirement_ids: []
+spec_path: ""
+status_history: []
+validation:
+  ids_valid: false
+  sections_valid: false
+  supremacy_declared: false
+metadata:
+  started_at: ""
+  updated_at: ""

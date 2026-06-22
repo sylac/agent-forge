@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "agent-forge",
+  "owner": { "name": "sylac" },
+  "metadata": {
+    "description": "sylac's agent skills marketplace. Install a plugin once per project; push to the source repo to update everywhere."
+  },
+  "plugins": [
+    {
+      "name": "dev-workflow",
+      "source": "./dev-workflow",
+      "description": "Engineering execution skills (changelog, observability, platform-dev, spec-authoring, test-patterns, ui-test-automation)."
+    },
+    {
+      "name": "solution-planning",
+      "source": "./solution-planning",
+      "description": "Solution-planning skills (poc-scoping, tech-evaluation, hitl-workflow, cloud-image-pipeline, mobile-cloud-integration)."
+    }
+  ]
+}
