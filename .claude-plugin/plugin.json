@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "agent-forge",
+  "description": "sylac's engineering & workflow skills: handoff, caveman, grill-me, grill-with-docs, improve-codebase-architecture, skill-authoring, tdd-with-specs, to-design-doc, to-prd, to-spec, to-issues, address-copilot-review.",
+  "author": {
+    "name": "sylac"
+  }
+}
